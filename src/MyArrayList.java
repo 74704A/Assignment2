@@ -1,112 +1,82 @@
-import java.util.Comparator;
 import java.util.Iterator;
-
-public class MyArrayList<T extends Comparable<T>> implements MyList<T> {
-    private static final int DEFAULT_CAPACITY = 5;
-    private Object[] array;
-    private int length;
+import java.util.Comparator;
+public class MyArrayList<T extends Comparable<T>> implements MyList<T>{
+    private Object[] list;
     private int size;
-
+    private int lenght;
+    public static final int DEFAULT_CAPACITY=5;
     public MyArrayList() {
-        array = new Object[DEFAULT_CAPACITY];
+        list = new Object[DEFAULT_CAPACITY];
         size = DEFAULT_CAPACITY;
-        length = 0;
+        lenght=0;
     }
 
-    public MyArrayList(int initialCapacity) {
-
-        if (initialCapacity > 0) {
-            array = new Object[initialCapacity];
-            size = initialCapacity;
-            length = 0;
-        } else if (initialCapacity == 0) {
-            new MyArrayList();
-        } else {
-            throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
+    private void increaseCapacity() {
+        Object[] newList = new Object[list.length*2];
+        for (int i = 0; i < list.length; i++) {
+            newList[i]=list[i];
         }
-
+        list = newList;
     }
-
     @Override
     public void add(T item) {
-        if (length >= size - 1) {
-            arrayWidening();
-        }
-        array[length++] = item;
+        if (lenght==size)
+            increaseCapacity();
+        list[lenght++]=item;
     }
 
     @Override
     public void set(int index, T item) {
-        if (index < 0 || index >= length) {
-            throw new IndexOutOfBoundsException("out of range");
-        }
-
-        array[index] = item;
+        checkIndex(index);
+        list[index]=item;
     }
 
     @Override
     public void add(int index, T item) {
-        if (index < 0 || index >= length) {
-            throw new IndexOutOfBoundsException("out of range");
+        checkIndex(index);
+        if (lenght==size)
+            increaseCapacity();
+        for (int i = lenght - 1; i >= index; i--) {
+            list[i + 1] = list[i];
         }
+        list[index] = item;
+        lenght++;
 
-        if (length == size) {
-            arrayWidening();
-        }
-
-        for (int i = length - 1; i >= index; i--) {
-            array[i + 1] = array[i];
-        }
-        array[index] = item;
-        length++;
     }
 
     @Override
     public void addFirst(T item) {
-        if (length >= size - 1) {
-            arrayWidening();
-        }
-
-        for (int i = length; i > 0; i--) {
-            array[i] = array[i - 1];
-        }
-
-        array[0] = item;
-        length++;
+        add(0,item);
     }
 
     @Override
     public void addLast(T item) {
-        add(item);
+        add(lenght,item);
     }
 
     @Override
     public T get(int index) {
-        if (index < 0 || index > array.length - 1) {
-            throw new IndexOutOfBoundsException("out of range");
-        }
-        return (T)array[index];
+        checkIndex(index);
+        return (T) list[index];
     }
 
     @Override
     public T getFirst() {
-        return (T)array[0];
+        return get(0);
     }
 
     @Override
     public T getLast() {
-        return (T)array[length - 1];
+        return get(lenght-1);
     }
 
     @Override
     public void remove(int index) {
-        if (index < 0 || index > length - 1) {
-            throw new IndexOutOfBoundsException("out of range");
+        checkIndex(index);
+        for (int i = index; i < list.length - 1; i++) {
+            list[i] = list[i + 1];
         }
-        for (int i = index; i < array.length - 1; i++) {
-            array[i] = array[i + 1];
-        }
-        length--;
+        lenght--;
     }
 
     @Override
@@ -116,17 +86,17 @@ public class MyArrayList<T extends Comparable<T>> implements MyList<T> {
 
     @Override
     public void removeLast() {
-        remove(length - 1);
+        remove(lenght-1);
     }
 
     @Override
     public void sort() {
-        for (int i = 0; i < length - 1; i++) {
-            for (int j = 0 ; j < length - i - 1; j++) {
+        for (int i = 0; i < lenght - 1; i++) {
+            for (int j = 0 ; j < lenght - i - 1; j++) {
                 if (get(j).compareTo(get(j + 1)) > 0) {
-                    Object temp = array[j];
-                    array[j] = array[j + 1];
-                    array[j + 1] = temp;
+                    Object temp = list[j];
+                    list[j] = list[j + 1];
+                    list[j + 1] = temp;
                 }
             }
         }
@@ -134,84 +104,69 @@ public class MyArrayList<T extends Comparable<T>> implements MyList<T> {
 
     @Override
     public int indexOf(Object object) {
-        for (int i = 0; i < length; i++) {
-            if (array[i] == object) {
+        for (int i = 0; i < lenght; i++) {
+            if (list[i].equals(object)) {
                 return i;
             }
         }
-
         return -1;
     }
 
     @Override
     public int lastIndexOf(Object object) {
-        for (int i = length - 1; i >= 0; i--) {
-            if (array[i] == object) {
+        for (int i = lenght - 1; i >= 0; i--) {
+            if (list[i].equals(object)) {
                 return i;
             }
         }
-
         return -1;
     }
 
     @Override
     public boolean exists(Object object) {
-        for (int i = 0; i < length; i++) {
-            if (array[i] == object) {
-                return true;
-            }
-        }
-
-        return false;
+        return indexOf(object) != -1;
     }
-
 
     @Override
     public Object[] toArray() {
-        return array;
-    }
-
-
-    private void arrayWidening() {
-        size *= 2;
-        Object[] newArray = new Object[size];
-        for(int i = 0; i < length; i++) {
-            newArray[i] = array[i];
+        Object[] array = new Object[lenght];
+        for (int i = 0; i < lenght; i++) {
+            array[i] = list[i];
         }
-        array = newArray;
+        return array;
     }
 
     @Override
     public void clear() {
-        array = new Object[DEFAULT_CAPACITY];
-        length = 0;
+        list = new Object[DEFAULT_CAPACITY];
         size = DEFAULT_CAPACITY;
+        lenght = 0;
     }
 
     @Override
     public int size() {
-        return size;
-    }
-
-    public int length() {
-        return length;
+        return lenght;
     }
 
     @Override
-    public Iterator iterator() {
-        return new MyIterator();
+    public Iterator<T> iterator() {
+        return new Iterator<T>() {
+            private int currentIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return currentIndex < lenght;
+            }
+
+            @Override
+            public T next() {
+                return get(currentIndex++);
+            }
+        };
     }
-
-    public class MyIterator implements Iterator<T> {
-        private int currentIndex = 0;
-        @Override
-        public boolean hasNext() {
-            return currentIndex < length;
-        }
-
-        @Override
-        public T next() {
-            return get(currentIndex++);
+    private void checkIndex(int index) {
+        if (index < 0 || index >= lenght) {
+            throw new IndexOutOfBoundsException("index out of range");
         }
     }
 }

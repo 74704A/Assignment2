@@ -3,138 +3,128 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class MyLinkedList<T extends Comparable<T>> implements MyList<T> {
-    Node<T> head;
-    Node<T> tail;
-    int size;
-
-    public MyLinkedList() {
-        head = tail = null;
-    }
-
-    public MyLinkedList(T item) {
-        head = tail = new Node<>(item);
-        size++;
-    }
+    private MyNode<T> head;
+    private MyNode<T> tail;
+    private int length;
+    T item;
 
     @Override
     public void add(T item) {
-        Node<T> newNode = new Node<>(item);
+        MyNode<T> newNode = new MyNode<>(item);
 
-        if (head == null) {
-            head = newNode;
-            tail = newNode;
-        } else {
-            tail.next = newNode;
-            newNode.prev = tail;
-            tail = newNode;
+        if(head == null){
+            head=tail=newNode;
         }
+        else {
+            tail.next=newNode;
+            newNode.prev=tail;
+            tail=newNode;
 
-        size++;
+        }
+        length++;
     }
 
     @Override
     public void set(int index, T item) {
-        if (index < 0 || index >= size) {
+        if (index < 0 || index >= length) {
             throw new IndexOutOfBoundsException("out of range");
         }
-        Node<T> current = head;
+        MyNode<T> cur=head;
         for (int i = 0; i < index; i++) {
-            current = current.next;
+            cur=cur.next;
         }
-        current.data = item;
+        cur.data=item;
     }
 
     @Override
     public void add(int index, T item) {
-        if (index < 0 || index > size ) {
+        if (index < 0 || index >= length) {
             throw new IndexOutOfBoundsException("out of range");
         }
-
-        if (index == 0) {
+        MyNode<T> newNode = new MyNode<>(item);
+        if(index == 0){
             addFirst(item);
             return;
         }
-
-        if (index == size) {
+        if(index == length){
             add(item);
             return;
         }
-
-        Node<T> current = head;
-        Node<T> newNode = new Node<>(item);
-        for (int i = 1; i < index; i++) {
-            current = current.next;
+        else{
+            MyNode<T> cur=head;
+            for (int i = 0; i < index; i++) {
+                cur=cur.next;
+            }
+            newNode.next=cur.next;
+            newNode.prev=cur;
+            cur.next=newNode;
+            length++;
         }
-        newNode.next = current.next;
-        newNode.prev = current;
-        current.next = newNode;
-        size++;
-
     }
 
     @Override
     public void addFirst(T item) {
-        Node<T> newNode = new Node<>(item);
-        newNode.next = head;
-        head = newNode;
-        size++;
+        MyNode<T> newNode = new MyNode<>(item);
+        if (head == null) {
+            head = tail = newNode;
+        } else {
+            newNode.next = head;
+            head.prev = newNode;
+            head = newNode;
+        }
+        length++;
     }
 
     @Override
     public void addLast(T item) {
-        add(item);
+        add(length,item);
     }
 
     @Override
     public T get(int index) {
-        if (index < 0 || index > size) {
+        if (index < 0 || index >= length) {
             throw new IndexOutOfBoundsException("out of range");
         }
-        Node<T> current = head;
+        MyNode<T> current = head;
         for (int i = 0; i < index; i++) {
-            current = current.next;
+            current=current.next;
         }
         return current.data;
     }
 
     @Override
     public T getFirst() {
-        if (head == null) {
-            throw new NoSuchElementException("List is empty");
-        }
-
+        if (head==null)
+            throw new NoSuchElementException("Empty");
         return head.data;
     }
 
     @Override
     public T getLast() {
-        if (tail == null) {
-            throw new NoSuchElementException("List is empty");
-        }
+        if(tail==null)
+            throw new NoSuchElementException("Empty");
         return tail.data;
     }
 
-
     @Override
     public void remove(int index) {
-        if (index < 0 || index >= size) {
+        if (index < 0 || index > length) {
             throw new IndexOutOfBoundsException("out of range");
         }
-
-        if (index == 0) {
+        if (index==0){
             removeFirst();
             return;
-        } else if (index == size - 1) {
+        }
+        if(index==length-1){
             removeLast();
             return;
-        } else {
-            Node<T> current = head;
-            for (int i = 0; i < index - 1; i++) {
-                current = current.next;
-            }
-            current.next = current.next.next;
-            size--;
         }
+        MyNode<T> current = head;
+        for (int i = 0; i < index - 1; i++) {
+            current = current.next;
+        }
+        current.next = current.next.next;
+        length--;
     }
 
     @Override
@@ -146,7 +136,7 @@ public class MyLinkedList<T extends Comparable<T>> implements MyList<T> {
             } else {
                 tail = null;
             }
-            size--;
+            length--;
         }
     }
 
@@ -162,14 +152,14 @@ public class MyLinkedList<T extends Comparable<T>> implements MyList<T> {
                 head = null;
             }
         }
-        size--;
+        length--;
     }
 
     @Override
     public void sort() {
-        for (int i = 0; i < size - 1; i++) {
-            Node<T> current = head;
-            for (int j = 0; j < size - 1 - i; j++) {
+        for (int i = 0; i < length - 1; i++) {
+            MyNode<T> current = head;
+            for (int j = 0; j < length - 1 - i; j++) {
                 if (current.data.compareTo(current.next.data) > 0) {
                     T temp = current.data;
                     current.data = current.next.data;
@@ -182,46 +172,43 @@ public class MyLinkedList<T extends Comparable<T>> implements MyList<T> {
 
     @Override
     public int indexOf(Object object) {
-        Node<T> current = head;
-        for (int i = 0; i < size; i++) {
+        MyNode<T> current = head;
+        int index = 0;
+        while (current != null) {
             if (current.data.equals(object)) {
-                return i;
+                return index;
             }
             current = current.next;
+            index++;
         }
         return -1;
     }
-
     @Override
-    public int lastIndexOf(Object object) {
-        Node<T> current = tail;
-        for (int i = size - 1; i >= 0; i--) {
+    public int lastIndexOf(Object object){
+        MyNode<T> current = tail;
+        int index = length - 1;
+        while (current != null) {
             if (current.data.equals(object)) {
-                return i;
+                return index;
             }
             current = current.prev;
+            index--;
         }
         return -1;
     }
 
     @Override
     public boolean exists(Object object) {
-        Node<T> current = head;
-        for (int i = 0; i < size; i++) {
-            if (current.data.equals(object)) {
-                return true;
-            }
-            current = current.next;
-        }
-        return false;
+        return indexOf(object) != -1;
     }
 
     @Override
     public Object[] toArray() {
-        Object[] array = new Object[size];
-        Node<T> current = head;
-        for (int i = 0; i < size; i++) {
-            array[i] = current.data;
+        Object[] array = new Object[length];
+        MyNode<T> current = head;
+        int index = 0;
+        while (current != null) {
+            array[index++] = current.data;
             current = current.next;
         }
         return array;
@@ -229,35 +216,40 @@ public class MyLinkedList<T extends Comparable<T>> implements MyList<T> {
 
     @Override
     public void clear() {
-        head = null;
-        tail = null;
-        size = 0;
+        head = tail = null;
+        length = 0;
     }
 
     @Override
     public int size() {
-        return size;
+        return length;
     }
 
     @Override
     public Iterator<T> iterator() {
-        return new MyIterator();
+        return new Iterator<>() {
+            private MyNode<T> currentNode = head;
+
+            @Override
+            public boolean hasNext() {
+                return currentNode != null;
+            }
+
+            @Override
+            public T next() {
+                T data = currentNode.data;
+                currentNode = currentNode.next;
+                return data;
+            }
+        };
     }
 
-    private class MyIterator implements Iterator<T> {
-
-        Node<T> current = head;
-
-        @Override
-        public boolean hasNext() {
-            return current != null;
-        }
-
-        @Override
-        public T next() {
-            T data = current.data;
-            current = current.next;
-            return data;
+    private class MyNode<T>{
+        T data;
+        MyNode<T> next;
+        MyNode<T> prev;
+        MyNode(T data) {
+            this.data=data;
         }
     }
 }

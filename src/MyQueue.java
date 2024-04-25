@@ -1,14 +1,12 @@
-import java.util.NoSuchElementException;
-
 public class MyQueue<T extends Comparable<T>> {
-    private final MyLinkedList<T> queue;
+    private MyLinkedList<T> queue;
 
     public MyQueue() {
         queue = new MyLinkedList<>();
     }
 
     public boolean empty() {
-        return queue.size == 0;
+        return queue.size() == 0;
     }
 
     public int size() {
@@ -16,6 +14,9 @@ public class MyQueue<T extends Comparable<T>> {
     }
 
     public T peek() {
+        if (empty()) {
+            throw new IllegalStateException("Queue is empty");
+        }
         return queue.getFirst();
     }
 
@@ -24,17 +25,11 @@ public class MyQueue<T extends Comparable<T>> {
     }
 
     public T dequeue() {
-        if (isEmpty()) {
-            throw new NoSuchElementException("Stack is empty");
+        if (empty()) {
+            throw new IllegalStateException("Queue is empty");
         }
-
-        T item = queue.head.data;
+        T frontElement = queue.getFirst();
         queue.removeFirst();
-        return item;
+        return frontElement;
     }
-
-    public boolean isEmpty() {
-        return queue.size == 0;
-    }
-
 }
